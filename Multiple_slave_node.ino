@@ -20,11 +20,15 @@ int counterAll = 0;
 int counterAcc = 0;
 bool thresholdReceived = false;
 
+// สำหรับ edge-trigger shoot
+bool shootTriggered = false;
+unsigned long lastShootTime = 0;
+
 void onThresholdWrite(BLEDevice central, BLECharacteristic characteristic) {
   int newThreshold = 0;
   characteristic.readValue(&newThreshold, sizeof(newThreshold));
   SOUND_THRESHOLD = newThreshold;
-  thresholdReceived = true;  // ✅ เปิดใช้งานการทำงานหลังรับ threshold
+  thresholdReceived = true;
   Serial.print("🔧 SOUND_THRESHOLD updated to: ");
   Serial.println(SOUND_THRESHOLD);
 }
@@ -39,7 +43,7 @@ void setup() {
     while (1);
   }
 
-  BLE.setLocalName("SLAVE-1"); // เปลี่ยนตาม Node ที่ใช้
+  BLE.setLocalName("SLAVE-1"); // เปลี่ยนชื่อได้ตาม node
   BLE.setAdvertisedService(customService);
 
   customService.addCharacteristic(shootCharacteristic);
@@ -80,22 +84,29 @@ void loop() {
       Serial.println(soundLevel);
       soundLevelCharacteristic.setValue((byte*)&soundLevel, sizeof(soundLevel));
 
-      if (soundLevel > SOUND_THRESHOLD) {
+      if (soundLevel > SOUND_THRESHOLD && !shootTriggered) {
+        shootTriggered = true;
+        lastShootTime = millis();
+
         Serial.println("🔥 ยิงแล้ว!");
         shootCharacteristic.setValue("1");
+
         counterAll++;
         counterAcc++;
         counterAllCharacteristic.setValue((byte*)&counterAll, sizeof(counterAll));
         counterAccCharacteristic.setValue((byte*)&counterAcc, sizeof(counterAcc));
-      } else {
+      }
+
+      if (shootTriggered && millis() - lastShootTime > 300) {
         shootCharacteristic.setValue("0");
+        shootTriggered = false;
       }
 
       BLE.poll();
-      delay(500);
+      delay(100); // เพิ่ม responsiveness
     }
 
-    thresholdReceived = false; // รีเซ็ตหลังจาก disconnect เพื่อรอ threshold ใหม่
+    thresholdReceived = false;
     Serial.println("🔄 Disconnected. Restarting advertise...");
     BLE.advertise();
   }
