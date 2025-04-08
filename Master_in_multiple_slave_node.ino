@@ -9,7 +9,7 @@
 
 const char* TARGET_ADDRESSES[] = {
   "54:91:e9:a3:b9:b8",  // ตัวอย่าง Slave-1
-  "54:91:e9:a3:b9:cd"   // ตัวอย่าง Slave-2
+  "e5:63:ba:70:da:c4"   // ตัวอย่าง Slave-2
 };
 const int NUM_SLAVES = sizeof(TARGET_ADDRESSES) / sizeof(TARGET_ADDRESSES[0]);
 const int SOUND_THRESHOLD = 150;
