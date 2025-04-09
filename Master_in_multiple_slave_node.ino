@@ -7,7 +7,7 @@
 #define COUNTER_ALL_UUID          "A1B2C3D4-E5F6-7890-1234-56789ABCDEF0"
 #define COUNTER_ACC_UUID          "B2C3D4E5-F678-9012-3456-789ABCDEF012"
 
-#define MAX_SLAVES 10
+#define MAX_SLAVES 10 // can change to n numbers.
 
 struct SlaveNode {
   String name;
